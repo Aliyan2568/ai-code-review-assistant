@@ -12,10 +12,8 @@ class Settings(BaseSettings):
     environment: str = "development"
     log_level: str = "INFO"
 
-    # Required: the app will refuse to start without a database URL.
     database_url: str
 
-    # Optional for now; required once the AI analyzer is added.
     groq_api_key: str = ""
     groq_model: str = "llama-3.3-70b-versatile"
 
