@@ -9,7 +9,6 @@ from app.config import get_settings
 
 settings = get_settings()
 
-# pool_pre_ping checks a connection is alive before using it.
 engine = create_engine(settings.database_url, pool_pre_ping=True)
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
