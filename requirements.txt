@@ -4,9 +4,7 @@ sqlalchemy
 psycopg[binary]
 pydantic
 pydantic-settings
-
 groq
-
 pytest
 pytest-cov
 httpx
