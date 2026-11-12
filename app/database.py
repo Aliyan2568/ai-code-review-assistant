@@ -27,6 +27,13 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
+def init_db() -> None:
+    """Create any missing tables. Existing tables are left untouched."""
+    import app.models  # noqa: F401  (registers the models on Base.metadata)
+
+    Base.metadata.create_all(bind=engine)
+
+
 def check_db_connection() -> bool:
     """Return True if the database answers a simple query."""
     with engine.connect() as conn:

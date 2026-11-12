@@ -1,8 +1,9 @@
 """Request/response models for code analysis and review."""
 
+from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 Severity = Literal["low", "medium", "high"]
 Category = Literal["bug", "security", "performance", "style", "syntax"]
@@ -36,9 +37,53 @@ class AnalyzeResponse(BaseModel):
     summary: AnalysisSummary
 
 
+AIStatus = Literal["ok", "disabled", "failed"]
+
+
 class ReviewResponse(AnalyzeResponse):
-    ai_status: Literal["ok", "disabled", "failed"]
+    id: int | None = Field(default=None, description="Saved review id; null if saving failed")
+    ai_status: AIStatus
     ai_summary: str | None = None
+
+
+class ReviewListItem(BaseModel):
+    """One row in the review history (no code or issues)."""
+
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    filename: str | None
+    created_at: datetime
+    ai_status: AIStatus
+    summary: AnalysisSummary
+
+    @classmethod
+    def from_model(cls, review) -> "ReviewListItem":
+        return cls(
+            id=review.id,
+            filename=review.filename,
+            created_at=review.created_at,
+            ai_status=review.ai_status,
+            summary=AnalysisSummary(
+                total=review.total_issues, high=review.high_count, medium=review.medium_count, low=review.low_count
+            ),
+        )
+
+
+class ReviewDetail(ReviewListItem):
+    code: str
+    ai_summary: str | None
+    issues: list[Issue]
+
+    @classmethod
+    def from_model(cls, review) -> "ReviewDetail":
+        base = ReviewListItem.from_model(review).model_dump()
+        return cls(
+            **base,
+            code=review.code,
+            ai_summary=review.ai_summary,
+            issues=[Issue.model_validate(issue, from_attributes=True) for issue in review.issues],
+        )
 
 
 def summarize(issues: list[Issue]) -> AnalysisSummary:
