@@ -6,7 +6,7 @@ Run with:  uvicorn app.main:app --reload
 from fastapi import FastAPI
 
 from app.config import get_settings
-from app.routes import analyze, health
+from app.routes import analyze, health, review
 from app.utils.logger import get_logger, setup_logging
 
 settings = get_settings()
@@ -22,6 +22,7 @@ app = FastAPI(
 
 app.include_router(health.router)
 app.include_router(analyze.router)
+app.include_router(review.router)
 
 
 @app.get("/", tags=["Root"])

@@ -36,6 +36,11 @@ class AnalyzeResponse(BaseModel):
     summary: AnalysisSummary
 
 
+class ReviewResponse(AnalyzeResponse):
+    ai_status: Literal["ok", "disabled", "failed"]
+    ai_summary: str | None = None
+
+
 def summarize(issues: list[Issue]) -> AnalysisSummary:
     return AnalysisSummary(
         total=len(issues),
