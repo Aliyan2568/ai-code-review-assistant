@@ -1,10 +1,6 @@
-"""Tests for saving reviews and the review history endpoints (SQLite in-memory)."""
-
 from unittest.mock import patch
-
 from sqlalchemy import select
 from sqlalchemy.exc import OperationalError
-
 from app.models import Review, ReviewIssue
 from app.schemas.review import Issue
 
