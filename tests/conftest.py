@@ -1,5 +1,3 @@
-"""Shared pytest fixtures."""
-
 import os
 os.environ.setdefault("DATABASE_URL", "postgresql+psycopg://user:pass@localhost:5432/test_db")
 
