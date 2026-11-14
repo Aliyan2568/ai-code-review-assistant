@@ -1,9 +1,5 @@
-"""Tests for the root and health endpoints. The database check is mocked."""
-
 from unittest.mock import patch
-
 from sqlalchemy.exc import OperationalError
-
 
 def test_root_returns_message(client):
     response = client.get("/")
