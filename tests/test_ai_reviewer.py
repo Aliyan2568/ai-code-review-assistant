@@ -1,12 +1,8 @@
-"""Tests for the AI reviewer and /review endpoint. Groq is always mocked."""
-
 import json
 from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
-
 import pytest
 from groq import APIConnectionError
-
 from app.schemas.review import Issue
 from app.services.ai_reviewer import AIReviewError, parse_ai_response, review_with_ai
 
