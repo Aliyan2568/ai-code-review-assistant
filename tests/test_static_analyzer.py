@@ -1,9 +1,5 @@
-"""Tests for the rule-based static analyzer and the /analyze endpoint."""
-
 import pytest
-
 from app.services.static_analyzer import analyze_code
-
 
 def rules(code: str) -> list[str]:
     return [issue.rule for issue in analyze_code(code)]
