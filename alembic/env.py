@@ -1,15 +1,9 @@
-"""Alembic environment: uses the app's DATABASE_URL and models.
-
-When the app runs migrations on startup it passes its own connection in
-config.attributes["connection"]; from the CLI a new engine is created.
-"""
-
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import create_engine
 
-import app.models  # noqa: F401  (registers tables on Base.metadata)
+import app.models 
 from app.database import Base
 
 config = context.config
