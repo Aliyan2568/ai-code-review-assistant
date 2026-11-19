@@ -1,7 +1,5 @@
 """create reviews and review_issues tables
-
 Revision ID: 0001
-Revises:
 Create Date: 2026-11-19
 """
 from typing import Sequence, Union
