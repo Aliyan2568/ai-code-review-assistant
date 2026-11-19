@@ -70,3 +70,14 @@ def test_review_still_returned_when_save_fails(client):
     assert response.status_code == 200
     assert response.json()["id"] is None
     assert response.json()["summary"]["total"] == 2
+
+
+def test_delete_review_endpoint(client, db_session):
+    review_id = post_review(client).json()["id"]
+    assert client.delete(f"/reviews/{review_id}").status_code == 204
+    assert client.get(f"/reviews/{review_id}").status_code == 404
+    assert db_session.scalars(select(ReviewIssue)).all() == []
+
+
+def test_delete_missing_review_returns_404(client):
+    assert client.delete("/reviews/999").status_code == 404

@@ -4,7 +4,7 @@ If the AI step is disabled or fails, the static results are still returned.
 If saving to the database fails, the review is still returned with id=null.
 """
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -69,3 +69,10 @@ def get_review(review_id: int, db: Session = Depends(get_db)) -> ReviewDetail:
     if saved is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Review not found")
     return ReviewDetail.from_model(saved)
+
+
+@router.delete("/reviews/{review_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_review(review_id: int, db: Session = Depends(get_db)) -> Response:
+    if not review_store.delete_review(db, review_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Review not found")
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

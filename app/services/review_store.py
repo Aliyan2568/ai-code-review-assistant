@@ -42,3 +42,13 @@ def list_reviews(db: Session, limit: int, offset: int) -> list[Review]:
 def get_review(db: Session, review_id: int) -> Review | None:
     stmt = select(Review).where(Review.id == review_id).options(selectinload(Review.issues))
     return db.scalar(stmt)
+
+
+def delete_review(db: Session, review_id: int) -> bool:
+    """Delete a review and its issues. Return False if it did not exist."""
+    review = db.get(Review, review_id)
+    if review is None:
+        return False
+    db.delete(review)
+    db.commit()
+    return True
