@@ -1,8 +1,9 @@
 """Database engine, session factory, and the FastAPI session dependency."""
 
 from collections.abc import Generator
+from pathlib import Path
 
-from sqlalchemy import create_engine, text
+from sqlalchemy import create_engine, inspect, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.config import get_settings
@@ -27,11 +28,37 @@ def get_db() -> Generator[Session, None, None]:
         db.close()
 
 
-def init_db() -> None:
-    """Create any missing tables. Existing tables are left untouched."""
-    import app.models  # noqa: F401  (registers the models on Base.metadata)
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
-    Base.metadata.create_all(bind=engine)
+
+def _alembic_config():
+    from alembic.config import Config
+
+    cfg = Config(str(PROJECT_ROOT / "alembic.ini"))
+    cfg.set_main_option("script_location", str(PROJECT_ROOT / "alembic"))
+    return cfg
+
+
+def run_migrations(bind=None) -> None:
+    """Bring the database schema up to date with `alembic upgrade head`.
+
+    A database created before migrations existed (tables present, no
+    alembic_version table) is stamped as current instead of re-created.
+    """
+    from alembic import command
+
+    cfg = _alembic_config()
+    with (bind or engine).begin() as conn:
+        cfg.attributes["connection"] = conn
+        tables = set(inspect(conn).get_table_names())
+        if "reviews" in tables and "alembic_version" not in tables:
+            command.stamp(cfg, "0001")
+        command.upgrade(cfg, "head")
+
+
+def init_db() -> None:
+    """Run database migrations on startup."""
+    run_migrations()
 
 
 def check_db_connection() -> bool:

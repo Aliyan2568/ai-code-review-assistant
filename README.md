@@ -30,7 +30,18 @@ GROQ_MODEL=llama-3.3-70b-versatile
 LOG_LEVEL=INFO
 ```
 
-Tables are created automatically on startup.
+The app runs database migrations (Alembic) automatically on startup.
+
+### Database migrations
+
+Schema changes are managed with [Alembic](https://alembic.sqlalchemy.org/). After changing `app/models.py`:
+
+```bash
+alembic revision --autogenerate -m "describe the change"   # creates a file in alembic/versions/ — review it
+alembic upgrade head                                       # apply (also happens on app startup)
+alembic downgrade -1                                       # undo the last migration
+alembic current                                            # show the current revision
+```
 
 ## Run
 

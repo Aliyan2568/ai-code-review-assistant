@@ -22,10 +22,10 @@ logger = get_logger(__name__)
 async def lifespan(_: FastAPI):
     try:
         init_db()
-        logger.info("Database tables are ready")
+        logger.info("Database migrations are up to date")
     except SQLAlchemyError as exc:
         # Keep the API up (e.g. /analyze works without a DB); /health will report the problem.
-        logger.error("Could not create database tables: %s", exc)
+        logger.error("Could not run database migrations: %s", exc)
     logger.info("%s started (environment=%s)", settings.app_name, settings.environment)
     yield
 
