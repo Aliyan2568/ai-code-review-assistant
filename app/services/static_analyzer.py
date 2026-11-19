@@ -1,8 +1,3 @@
-"""Rule-based static analysis of Python code using the standard-library `ast` module.
-
-The code is parsed, never executed.
-"""
-
 import ast
 import re
 
