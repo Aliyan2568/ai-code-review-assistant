@@ -15,7 +15,7 @@ with an AI review powered by Groq, and stores review history in PostgreSQL.
 
 ```bash
 python -m venv .venv
-.venv\Scripts\activate          # Windows  (source .venv/bin/activate on macOS/Linux)
+.venv\Scripts\activate          
 pip install -r requirements.txt
 ```
 
