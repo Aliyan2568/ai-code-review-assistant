@@ -1,5 +1,3 @@
-"""Database access for saved reviews."""
-
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
