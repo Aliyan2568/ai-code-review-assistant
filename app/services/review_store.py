@@ -32,8 +32,23 @@ def save_review(
     return review
 
 
-def list_reviews(db: Session, limit: int, offset: int) -> list[Review]:
-    stmt = select(Review).order_by(Review.created_at.desc(), Review.id.desc()).limit(limit).offset(offset)
+def list_reviews(
+    db: Session,
+    limit: int,
+    offset: int,
+    filename: str | None = None,
+    min_severity: str | None = None,
+) -> list[Review]:
+    stmt = select(Review)
+    if filename:
+        stmt = stmt.where(Review.filename.ilike(f"%{filename}%"))
+    if min_severity == "high":
+        stmt = stmt.where(Review.high_count > 0)
+    elif min_severity == "medium":
+        stmt = stmt.where((Review.high_count > 0) | (Review.medium_count > 0))
+    elif min_severity == "low":
+        stmt = stmt.where(Review.total_issues > 0)
+    stmt = stmt.order_by(Review.created_at.desc(), Review.id.desc()).limit(limit).offset(offset)
     return list(db.scalars(stmt))
 
 

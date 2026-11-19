@@ -46,7 +46,7 @@ Interactive API docs: http://localhost:8000/docs
 | GET | `/health` | API and database status |
 | POST | `/analyze` | Static analysis only (no AI, nothing saved) |
 | POST | `/review` | Static + AI review, saved to history |
-| GET | `/reviews` | List saved reviews (`limit`, `offset`) |
+| GET | `/reviews` | List saved reviews (`limit`, `offset`, `filename`, `min_severity`) |
 | GET | `/reviews/stats` | Totals by severity and most common rules |
 | GET | `/reviews/{id}` | Full review with code and issues |
 | DELETE | `/reviews/{id}` | Delete a review |

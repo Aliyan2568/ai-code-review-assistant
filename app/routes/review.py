@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.review import CodeRequest, ReviewDetail, ReviewListItem, ReviewResponse, ReviewStats, summarize
+from app.schemas.review import CodeRequest, Severity, ReviewDetail, ReviewListItem, ReviewResponse, ReviewStats, summarize
 from app.services import ai_reviewer, review_store
 from app.services.static_analyzer import analyze_code
 from app.utils.logger import get_logger
@@ -58,9 +58,12 @@ def review(request: CodeRequest, db: Session = Depends(get_db)) -> ReviewRespons
 def list_reviews(
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
+    filename: str | None = Query(None, max_length=255, description="Case-insensitive substring match"),
+    min_severity: Severity | None = Query(None, description="Only reviews with at least one issue this severe"),
     db: Session = Depends(get_db),
 ) -> list[ReviewListItem]:
-    return [ReviewListItem.from_model(r) for r in review_store.list_reviews(db, limit, offset)]
+    rows = review_store.list_reviews(db, limit, offset, filename=filename, min_severity=min_severity)
+    return [ReviewListItem.from_model(r) for r in rows]
 
 
 # Declared before /reviews/{review_id} so "stats" is not parsed as an id.

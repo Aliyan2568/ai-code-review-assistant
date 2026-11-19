@@ -95,3 +95,28 @@ def test_stats_aggregates_reviews(client):
     assert body["total_reviews"] == 2
     assert body["issues"] == {"total": 3, "high": 2, "medium": 0, "low": 1}
     assert body["top_rules"] == [{"rule": "eval-usage", "count": 2}, {"rule": "naming", "count": 1}]
+
+
+def test_list_reviews_filter_by_filename(client):
+    post_review(client, filename="utils/Helpers.py")
+    post_review(client, filename="main.py")
+    rows = client.get("/reviews", params={"filename": "helpers"}).json()
+    assert [r["filename"] for r in rows] == ["utils/Helpers.py"]
+
+
+def test_list_reviews_filter_by_min_severity(client):
+    high = post_review(client).json()["id"]
+    medium = post_review(client, code="def f(x=[]):\n    pass\n", ai=("", [])).json()["id"]
+    clean = post_review(client, code="x = 1\n", ai=("", [])).json()["id"]
+
+    def ids(severity):
+        return {r["id"] for r in client.get("/reviews", params={"min_severity": severity}).json()}
+
+    assert ids("high") == {high}
+    assert ids("medium") == {high, medium}
+    assert ids("low") == {high, medium}
+    assert clean not in ids("low")
+
+
+def test_list_reviews_rejects_bad_severity(client):
+    assert client.get("/reviews", params={"min_severity": "critical"}).status_code == 422
