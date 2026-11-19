@@ -50,7 +50,20 @@ class _Visitor(ast.NodeVisitor):
             if kw.arg == "shell" and isinstance(kw.value, ast.Constant) and kw.value.value is True:
                 self._add(node, "high", "security", "shell-true",
                           "shell=True enables shell injection; pass a list of arguments instead.")
+        self._check_deserialization(node)
         self.generic_visit(node)
+
+    def _check_deserialization(self, node: ast.Call) -> None:
+        func = node.func
+        if not (isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name)):
+            return
+        module, method = func.value.id, func.attr
+        if module == "pickle" and method in {"load", "loads"}:
+            self._add(node, "high", "security", "unsafe-deserialization",
+                      "pickle can execute arbitrary code when loading untrusted data; use json instead.")
+        elif module == "yaml" and method == "load" and not any(kw.arg == "Loader" for kw in node.keywords):
+            self._add(node, "high", "security", "unsafe-deserialization",
+                      "yaml.load without a Loader is unsafe; use yaml.safe_load instead.")
 
     def visit_Compare(self, node: ast.Compare) -> None:
         for op, comparator in zip(node.ops, node.comparators):

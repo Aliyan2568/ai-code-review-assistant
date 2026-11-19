@@ -72,3 +72,13 @@ def test_analyze_endpoint(client):
 def test_analyze_endpoint_rejects_empty_code(client):
     response = client.post("/analyze", json={"code": ""})
     assert response.status_code == 422
+
+
+@pytest.mark.parametrize("call", ["pickle.load(f)", "pickle.loads(data)", "yaml.load(text)"])
+def test_unsafe_deserialization(call):
+    assert rules(f"{call}\n") == ["unsafe-deserialization"]
+
+
+@pytest.mark.parametrize("call", ["yaml.safe_load(text)", "yaml.load(text, Loader=yaml.SafeLoader)", "json.loads(s)"])
+def test_safe_deserialization_is_fine(call):
+    assert rules(f"{call}\n") == []
