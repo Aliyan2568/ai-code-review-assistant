@@ -7,7 +7,8 @@ with an AI review powered by Groq, and stores review history in PostgreSQL.
 ## Features
 
 - **Static analysis**: bare `except`, mutable default arguments, `eval`/`exec`, `shell=True`,
-  `== None` comparisons, hardcoded secrets, unsafe `pickle`/`yaml` deserialization, syntax errors
+  `== None` comparisons, hardcoded secrets, unsafe `pickle`/`yaml` deserialization,
+  weak hashes (MD5/SHA-1), `requests` calls without a timeout, syntax errors
 - **AI review** via Groq (optional — static results are still returned if the AI is disabled or fails)
 - **Review history** saved to PostgreSQL, with listing, detail, delete, and aggregate stats
 

@@ -82,3 +82,22 @@ def test_unsafe_deserialization(call):
 @pytest.mark.parametrize("call", ["yaml.safe_load(text)", "yaml.load(text, Loader=yaml.SafeLoader)", "json.loads(s)"])
 def test_safe_deserialization_is_fine(call):
     assert rules(f"{call}\n") == []
+
+
+@pytest.mark.parametrize("call", ["hashlib.md5(data)", "hashlib.sha1(data)", "hashlib.new('MD5')"])
+def test_weak_hash(call):
+    assert rules(f"{call}\n") == ["weak-hash"]
+
+
+@pytest.mark.parametrize("call", ["hashlib.sha256(data)", "hashlib.new('sha256')"])
+def test_strong_hash_is_fine(call):
+    assert rules(f"{call}\n") == []
+
+
+@pytest.mark.parametrize("call", ["requests.get(url)", "requests.post(url, json=body)"])
+def test_request_without_timeout(call):
+    assert rules(f"{call}\n") == ["request-without-timeout"]
+
+
+def test_request_with_timeout_is_fine():
+    assert rules("requests.get(url, timeout=5)\n") == []

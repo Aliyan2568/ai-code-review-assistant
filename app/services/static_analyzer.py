@@ -5,6 +5,8 @@ from app.schemas.review import Issue
 
 SECRET_NAME = re.compile(r"(password|passwd|secret|api_?key|token)", re.IGNORECASE)
 DANGEROUS_CALLS = {"eval", "exec"}
+WEAK_HASHES = {"md5", "sha1"}
+HTTP_METHODS = {"get", "post", "put", "patch", "delete", "head", "options", "request"}
 
 
 class _Visitor(ast.NodeVisitor):
@@ -46,7 +48,27 @@ class _Visitor(ast.NodeVisitor):
                 self._add(node, "high", "security", "shell-true",
                           "shell=True enables shell injection; pass a list of arguments instead.")
         self._check_deserialization(node)
+        self._check_weak_hash(node)
+        self._check_request_timeout(node)
         self.generic_visit(node)
+
+    def _check_weak_hash(self, node: ast.Call) -> None:
+        func = node.func
+        if isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name) and func.value.id == "hashlib":
+            algo = func.attr
+            if algo == "new" and node.args and isinstance(node.args[0], ast.Constant):
+                algo = str(node.args[0].value).lower()
+            if algo in WEAK_HASHES:
+                self._add(node, "medium", "security", "weak-hash",
+                          f"{algo.upper()} is broken for security use; use hashlib.sha256 (or bcrypt/argon2 for passwords).")
+
+    def _check_request_timeout(self, node: ast.Call) -> None:
+        func = node.func
+        if (isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name)
+                and func.value.id == "requests" and func.attr in HTTP_METHODS
+                and not any(kw.arg == "timeout" for kw in node.keywords)):
+            self._add(node, "medium", "bug", "request-without-timeout",
+                      f"requests.{func.attr}() has no timeout and can hang forever; pass timeout=<seconds>.")
 
     def _check_deserialization(self, node: ast.Call) -> None:
         func = node.func
