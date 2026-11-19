@@ -9,7 +9,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from app.database import get_db
-from app.schemas.review import CodeRequest, ReviewDetail, ReviewListItem, ReviewResponse, summarize
+from app.schemas.review import CodeRequest, ReviewDetail, ReviewListItem, ReviewResponse, ReviewStats, summarize
 from app.services import ai_reviewer, review_store
 from app.services.static_analyzer import analyze_code
 from app.utils.logger import get_logger
@@ -61,6 +61,12 @@ def list_reviews(
     db: Session = Depends(get_db),
 ) -> list[ReviewListItem]:
     return [ReviewListItem.from_model(r) for r in review_store.list_reviews(db, limit, offset)]
+
+
+# Declared before /reviews/{review_id} so "stats" is not parsed as an id.
+@router.get("/reviews/stats", response_model=ReviewStats)
+def review_stats(db: Session = Depends(get_db)) -> ReviewStats:
+    return ReviewStats(**review_store.get_stats(db))
 
 
 @router.get("/reviews/{review_id}", response_model=ReviewDetail)

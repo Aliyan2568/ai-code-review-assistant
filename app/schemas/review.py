@@ -86,6 +86,19 @@ class ReviewDetail(ReviewListItem):
         )
 
 
+class RuleCount(BaseModel):
+    rule: str
+    count: int
+
+
+class ReviewStats(BaseModel):
+    """Aggregate numbers across all saved reviews."""
+
+    total_reviews: int
+    issues: AnalysisSummary
+    top_rules: list[RuleCount]
+
+
 def summarize(issues: list[Issue]) -> AnalysisSummary:
     return AnalysisSummary(
         total=len(issues),

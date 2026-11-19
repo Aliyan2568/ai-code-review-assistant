@@ -1,6 +1,6 @@
 """Database access for saved reviews."""
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session, selectinload
 
 from app.models import Review, ReviewIssue
@@ -52,3 +52,27 @@ def delete_review(db: Session, review_id: int) -> bool:
     db.delete(review)
     db.commit()
     return True
+
+
+def get_stats(db: Session, top_n: int = 5) -> dict:
+    """Aggregate counts across all saved reviews."""
+    totals = db.execute(
+        select(
+            func.count(Review.id),
+            func.coalesce(func.sum(Review.total_issues), 0),
+            func.coalesce(func.sum(Review.high_count), 0),
+            func.coalesce(func.sum(Review.medium_count), 0),
+            func.coalesce(func.sum(Review.low_count), 0),
+        )
+    ).one()
+    top_rules = db.execute(
+        select(ReviewIssue.rule, func.count().label("n"))
+        .group_by(ReviewIssue.rule)
+        .order_by(func.count().desc(), ReviewIssue.rule)
+        .limit(top_n)
+    ).all()
+    return {
+        "total_reviews": totals[0],
+        "issues": {"total": totals[1], "high": totals[2], "medium": totals[3], "low": totals[4]},
+        "top_rules": [{"rule": rule, "count": n} for rule, n in top_rules],
+    }

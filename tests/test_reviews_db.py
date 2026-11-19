@@ -81,3 +81,17 @@ def test_delete_review_endpoint(client, db_session):
 
 def test_delete_missing_review_returns_404(client):
     assert client.delete("/reviews/999").status_code == 404
+
+
+def test_stats_with_no_reviews(client):
+    body = client.get("/reviews/stats").json()
+    assert body == {"total_reviews": 0, "issues": {"total": 0, "high": 0, "medium": 0, "low": 0}, "top_rules": []}
+
+
+def test_stats_aggregates_reviews(client):
+    post_review(client)
+    post_review(client, ai=("Fine.", []))
+    body = client.get("/reviews/stats").json()
+    assert body["total_reviews"] == 2
+    assert body["issues"] == {"total": 3, "high": 2, "medium": 0, "low": 1}
+    assert body["top_rules"] == [{"rule": "eval-usage", "count": 2}, {"rule": "naming", "count": 1}]
